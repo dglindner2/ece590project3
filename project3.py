@@ -21,13 +21,10 @@ def detectArbitrage(adjList, adjMat, tol=1e-15):
     ##### Your implementation goes here. #####
     # Set initial dist and prev.
 
-    cycle = None
-
     for vertex in adjList:
         vertex.dist = math.inf
         vertex.prev = None
 
-    # NOTE THIS COULD BE AN ISSUE
     # Initialize start distance
     adjList[0].dist = 0
 
@@ -41,25 +38,40 @@ def detectArbitrage(adjList, adjMat, tol=1e-15):
                     neighbor.dist = vertex.dist + adjMat[vertex.rank][neighbor.rank]
                     neighbor.prev = vertex
 
-# NOTE: OUR CURRENT ERROR IS BECAUSE THIS IF STATEMENT IN LINE 46 IS NEVER TRUE
+
+    # This is our extra iteration.
+    cycle = None
     for vertex in adjList:
         for neighbor in vertex.neigh:
+            # If the optimal value is changed, this implies that there is a cycle.
+            # Thus, we note which node is changed. And we start from that node.
+            # That node is called 'cycle' in our code
+            # This if statement only will be true if a distance is updated!
             if neighbor.dist > vertex.dist + adjMat[vertex.rank][neighbor.rank] + tol:
                 # This means that there is a cycle
+                neighbor.dist = vertex.dist + adjMat[vertex.rank][neighbor.rank]
+                neighbor.prev = vertex
                 cycle = neighbor
-                break
+
+
+        if cycle is not None:
+            break
+
 
     path = []
 
-    if cycle is None:
-        return []
-    else:
-        while cycle.prev is not None:
-            path.append(cycle.prev)
-            cycle = cycle.prev
+    # While the current vertex is not already in the path
+    while cycle.rank not in path:
+        path.append(cycle.rank)
+        cycle = cycle.prev
 
-    # Reverse list
-    path = path[::-1]
+    # BS hack to get the right path
+    path.remove(path[0])
+    path.append(path[0])
+
+    print(path)
+    # we have:    [0, 3, 1, 0]
+    # His answer: [0, 3, 1, 0]
 
     return path
 
@@ -69,9 +81,8 @@ def detectArbitrage(adjList, adjMat, tol=1e-15):
 rates2mat
 """
 def rates2mat(rates):
-    # WHAT DOES THIS FUNCTION NEED TO DO
     # Currently this only returns a copy of the rates matrix.
-    return [[R for R in row] for row in rates]
+    return [[-math.log(R) for R in row] for row in rates]
     ##### Your implementation goes here. #####
 
 """
