@@ -52,28 +52,30 @@ def detectArbitrage(adjList, adjMat, tol=1e-15):
                 neighbor.dist = vertex.dist + adjMat[vertex.rank][neighbor.rank]
                 neighbor.prev = vertex
                 cycle = neighbor
-
+                break
 
         if cycle is not None:
             break
 
 
-    path = []
+    if cycle is None:
+        return []
 
+    path = []
     # While the current vertex is not already in the path
     while cycle.rank not in path:
         path.append(cycle.rank)
         cycle = cycle.prev
 
-    # BS hack to get the right path
-    path.remove(path[0])
-    path.append(path[0])
+    cycle = cycle.prev
+    path = []
+    while cycle.rank not in path:
+        path.append(cycle.rank)
+        cycle = cycle.prev
 
-    print(path)
-    # we have:    [0, 3, 1, 0]
-    # His answer: [0, 3, 1, 0]
+    path.append(cycle.rank)
 
-    return path
+    return path[::-1]
 
 ################################################################################
 
